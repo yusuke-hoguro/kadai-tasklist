@@ -1,9 +1,8 @@
 package controllers;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 
-import javax.persistence.EntityManager;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -11,7 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import models.Task;
-import utils.DBUtil;
 
 /**
  * Servlet implementation class NewServlet
@@ -32,36 +30,19 @@ public class NewServlet extends HttpServlet {
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        //テーブル作成の動作確認用で一旦、Newに作成
-
-        //EntityManagerのインスタンス作成
-        EntityManager em = DBUtil.createEntityManager();
-
-        //taskテーブルのインスタンス作成
-        Task taskTable = new Task();
-
-        //コンテンツ（タスクをセット）
-        String content = "test";
-        taskTable.setContent(content);
+        //CSRF対策
+        request.setAttribute("_token", request.getSession().getId());
 
         /*
-         * 現在時刻を取得して作成時間と更新時間をセット
-         * ミリ秒を使用してTimestampオブジェクト作成
+         * 更新時等に内容を残すためにフォームに現在のタスク内容を表示するように設定
+         * messageオブジェクトのデータがnewのJSP表示時に入っていないとエラーになるので初期値として設定
          */
-        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-        taskTable.setCreated_at(currentTime);
-        taskTable.setUpdated_at(currentTime);
+        request.setAttribute("task", new Task());
 
-        //データベース保存作業
-        em.getTransaction().begin();
-        em.persist(taskTable);
-        em.getTransaction().commit();
-
-        //自動採番された番号を表示
-        response.getWriter().append(Integer.valueOf(taskTable.getId()).toString());
-
-        //EntityManagerをクローズ
-        em.close();
+        //リクエストを転送するためのインスタンス作成
+        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/tasks/new.jsp");
+        //リクエストを転送
+        rd.forward(request, response);
 
     }
 

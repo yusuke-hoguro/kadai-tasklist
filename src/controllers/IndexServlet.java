@@ -33,8 +33,6 @@ public class IndexServlet extends HttpServlet {
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        //セッションスコープの不要になったデータを削除(Editで設定したtask_idの削除)
-        request.getSession().removeAttribute("task_id");
 
         EntityManager em = DBUtil.createEntityManager();
 
@@ -45,6 +43,21 @@ public class IndexServlet extends HttpServlet {
 
         //リクエストスコープにセット
         request.setAttribute("tasks", tasks);
+
+        //セッションスコープの不要になったデータを削除(Editで設定したtask_idの削除)
+        if(request.getSession().getAttribute("task_id") != null){
+            request.getSession().removeAttribute("task_id");
+        }
+
+
+        //セッションスコープに登録されているフラッシュメッセージをリクエストスコープに移行し削除
+        if(request.getSession().getAttribute("flush") != null){
+
+            request.setAttribute("flush", request.getSession().getAttribute("flush"));
+            request.getSession().removeAttribute("flush");
+
+        }
+
 
         //リクエストをビューに転送する
         RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/tasks/index.jsp");

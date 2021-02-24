@@ -57,6 +57,7 @@ public class CreateServlet extends HttpServlet {
             em.getTransaction().begin();
             em.persist(taskTable);
             em.getTransaction().commit();
+            request.getSession().setAttribute("flush", "登録が完了しました。");
 
             //クローズ処理
             em.close();

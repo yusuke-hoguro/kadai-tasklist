@@ -45,6 +45,7 @@ public class DestoryServlet extends HttpServlet {
             em.getTransaction().begin();
             em.remove(tasktable);
             em.getTransaction().commit();
+            request.getSession().setAttribute("flush", "削除が完了しました。");
 
             em.close();
 

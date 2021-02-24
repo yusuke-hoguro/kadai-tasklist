@@ -1,7 +1,6 @@
 package controllers;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 
 import javax.persistence.EntityManager;
 import javax.servlet.ServletException;
@@ -14,16 +13,16 @@ import models.Task;
 import utils.DBUtil;
 
 /**
- * Servlet implementation class UpdateServlet
+ * Servlet implementation class DestoryServlet
  */
-@WebServlet("/update")
-public class UpdateServlet extends HttpServlet {
+@WebServlet("/destroy")
+public class DestoryServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public UpdateServlet() {
+    public DestoryServlet() {
         super();
     }
 
@@ -32,40 +31,33 @@ public class UpdateServlet extends HttpServlet {
      */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        //edit.jspから送られてきたトークンを取得
+        //CSRF対策のトークン取得
         String _token = request.getParameter("_token");
-
-        //不正なアクセスでないかチェック
+        //トークンを確認して問題なければ実行
         if(_token != null && _token.equals(request.getSession().getId())){
 
-            //EntityManagerのインスタンス作成
             EntityManager em = DBUtil.createEntityManager();
 
-            //セッションスコープからIDを取得し、該当のIDのメッセージを取得
-            Task taskTable = em.find(Task.class, (Integer)(request.getSession().getAttribute("task_id")));
+            //セッションスコープからメッセージIDを取得し、そのデータをデータベースから取得する
+            Task tasktable = em.find(Task.class, (Integer)(request.getSession().getAttribute("task_id")));
 
-            //入力されたタスク（コンテンツをセットする）
-            String content = request.getParameter("content");
-            taskTable.setContent(content);
-
-            //現在時刻の取得
-            Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-            taskTable.setUpdated_at(currentTime);
-
-            //データベースに保存する
+            //データベースの削除処理
             em.getTransaction().begin();
+            em.remove(tasktable);
             em.getTransaction().commit();
 
-            //クローズ処理
             em.close();
 
-            //不要になったセッションスコープを削除する ⇒ Indexサーブレットで一括削除
+            //セッションスコープの不要になったデータを削除 ⇒ Indexサーブレットで一括削除
             //request.getSession().removeAttribute("task_id");
 
-            //indexにリダイレクト
+            //indexページへリダイレクト
             response.sendRedirect(request.getContextPath() + "/index");
+
         }
 
     }
+
+
 
 }

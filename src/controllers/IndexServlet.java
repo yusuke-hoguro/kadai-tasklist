@@ -33,9 +33,12 @@ public class IndexServlet extends HttpServlet {
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
+        //セッションスコープの不要になったデータを削除(Editで設定したtask_idの削除)
+        request.getSession().removeAttribute("task_id");
+
         EntityManager em = DBUtil.createEntityManager();
 
-        //データベースからデータを取得できるか一旦、確認する用
+        //データベースからタスクテーブルの全データを取得
         List<Task> tasks = em.createNamedQuery("getAllTasks",Task.class).getResultList();
 
         em.close();

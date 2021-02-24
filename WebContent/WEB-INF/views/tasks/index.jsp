@@ -10,7 +10,6 @@
                     <a href = "${pageContext.request.contextPath }/show?id=${task.id}">
                         <c:out value="${task.id}"></c:out>
                     </a>
-                    <%-- &gt;は > &lt;は < のこと--%>
                     : <c:out value="${task.content}"></c:out>
                 </li>
             </c:forEach>

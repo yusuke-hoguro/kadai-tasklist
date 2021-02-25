@@ -2,14 +2,17 @@ package controllers;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import models.TaskValidator;
 import models.Task;
 import utils.DBUtil;
 
@@ -52,19 +55,38 @@ public class UpdateServlet extends HttpServlet {
             Timestamp currentTime = new Timestamp(System.currentTimeMillis());
             taskTable.setUpdated_at(currentTime);
 
-            //データベースに保存する
-            em.getTransaction().begin();
-            em.getTransaction().commit();
-            request.getSession().setAttribute("flush", "更新が完了しました。");
+            //バリデーションを実行しエラーがあったら新規登録画面に移行
+            List<String> errors = TaskValidator.validate(taskTable);
 
-            //クローズ処理
-            em.close();
+            if(errors.size() > 0){
 
-            //不要になったセッションスコープを削除する ⇒ Indexサーブレットで一括削除
-            //request.getSession().removeAttribute("task_id");
+                em.close();
 
-            //indexにリダイレクト
-            response.sendRedirect(request.getContextPath() + "/index");
+                //フォームに初期値を設定してさらにエラーメッセージを送る。
+                request.setAttribute("_token", request.getSession().getId());
+                request.setAttribute("task", taskTable);
+                request.setAttribute("errors", errors);
+
+                RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/tasks/edit.jsp");
+                rd.forward(request, response);
+
+            }else{
+
+                //データベースに保存する
+                em.getTransaction().begin();
+                em.getTransaction().commit();
+                request.getSession().setAttribute("flush", "更新が完了しました。");
+
+                //クローズ処理
+                em.close();
+
+                //不要になったセッションスコープを削除する ⇒ Indexサーブレットで一括削除
+                //request.getSession().removeAttribute("task_id");
+
+                //indexにリダイレクト
+                response.sendRedirect(request.getContextPath() + "/index");
+
+            }
         }
 
     }

@@ -36,13 +36,31 @@ public class IndexServlet extends HttpServlet {
 
         EntityManager em = DBUtil.createEntityManager();
 
+        //ページネーション機能 開くページ数、表示件数の設定
+        int indexPage = 1;
+        int displayCount = 15; //表示件数の設定
+
+        try{
+            indexPage = Integer.parseInt(request.getParameter("page"));
+        }catch(NumberFormatException e){}
+
         //データベースからタスクテーブルの全データを取得
-        List<Task> tasks = em.createNamedQuery("getAllTasks",Task.class).getResultList();
+        List<Task> tasks = em.createNamedQuery("getAllTasks",Task.class)
+                .setFirstResult(displayCount * (indexPage - 1))
+                .setMaxResults(displayCount)
+                .getResultList();
+
+        //Taskの全件数を取得（indexのページネーション表示に使用）
+        //createNamedQuery：引数はオブジェクト型 を指定
+        long tasksCount = (long)em.createNamedQuery("getTasksCount", Long.class).getSingleResult();
 
         em.close();
 
         //リクエストスコープにセット
         request.setAttribute("tasks", tasks);
+        request.setAttribute("tasksCount", tasksCount);
+        request.setAttribute("displayCount", displayCount);
+        request.setAttribute("indexPage", indexPage);
 
         //セッションスコープの不要になったデータを削除(Editで設定したtask_idの削除)
         if(request.getSession().getAttribute("task_id") != null){

@@ -29,6 +29,15 @@ import javax.persistence.Table;
              * select句にエンティティを指定すると、エンティティの全プロパティが取得される（select *に近い）
              */
             query = "SELECT t FROM Task t ORDER BY t.id DESC"
+            ),
+    @NamedQuery(
+            name = "getTasksCount",
+            /*
+             * 注：テーブル名のところ（Message）はJPQLではテーブル名ではなく、エンティティクラス名
+             * from句にはエンティティ名とそのエンティティのエイリアス(別名)を記述 FROM Task t
+             * select句にエンティティを指定すると、エンティティの全プロパティが取得される（select *に近い）
+             */
+            query = "SELECT COUNT(t) FROM Task t"
             )
 })
 @Table(name = "tasks")
